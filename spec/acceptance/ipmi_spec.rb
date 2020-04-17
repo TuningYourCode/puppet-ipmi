@@ -1,12 +1,13 @@
 require 'spec_helper_acceptance'
 
 describe 'ipmi class' do
+  maj = fact_on 'master', 'operatingsystemmajrelease'
 
   package_name = nil
-  case fact('os.release.major')
-  when '5'
+  case maj.to_i
+  when 5
     package_name = ['OpenIPMI', 'OpenIPMI-tools']
-  when '6', '7'
+  when 6, 7
     package_name = ['OpenIPMI', 'ipmitool']
   end
 
@@ -21,12 +22,12 @@ describe 'ipmi class' do
 
     it 'applies the manifest' do
       # ipmi service startup will fail because there's no bmc
-      apply_manifest(pp, :catch_failures => false)
+      apply_manifest(pp, catch_failures: false)
     end
 
     package_name.each do |pkg|
       describe package(pkg) do
-        it { should be_installed }
+        it { is_expected.to be_installed }
       end
     end
   end

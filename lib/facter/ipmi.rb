@@ -25,45 +25,45 @@
 #     ipmi_subnet_mask = 255.255.255.0
 #     ...
 #
-
 class IPMIChannel
-  public
-  def initialize channel_nr
+  def initialize(channel_nr)
     @channel_nr = channel_nr
   end
 
   def load_facts
-    if Facter::Util::Resolution.which('ipmitool')
-      ipmitool_output = Facter::Util::Resolution.exec("ipmitool lan print #{@channel_nr} 2>&1")
-      parse_ipmitool_output ipmitool_output
-    end
+    return unless Facter::Util::Resolution.which('ipmitool')
+    ipmitool_output = Facter::Util::Resolution.exec("ipmitool lan print #{@channel_nr} 2>&1")
+    parse_ipmitool_output ipmitool_output
   end
 
   private
-  def parse_ipmitool_output ipmitool_output
+
+  def parse_ipmitool_output(ipmitool_output)
     ipmitool_output.each_line do |line|
       case line.strip
-      when /^IP Address\s*:\s+(\S.*)/
-        add_ipmi_fact("ipaddress", $1)
-      when /^IP Address Source\s*:\s+(\S.*)/
-        add_ipmi_fact("ipaddress_source", $1)
-      when /^Subnet Mask\s*:\s+(\S.*)/
-        add_ipmi_fact("subnet_mask", $1)
-      when /^MAC Address\s*:\s+(\S.*)/
-        add_ipmi_fact("macaddress", $1)
-      when /^Default Gateway IP\s*:\s+(\S.*)/
-        add_ipmi_fact("gateway", $1)
+      when %r{^IP Address\s*:\s+(\S.*)}
+        add_ipmi_fact('ipaddress', Regexp.last_match(1))
+      when %r{^IP Address Source\s*:\s+(\S.*)}
+        add_ipmi_fact('ipaddress_source', Regexp.last_match(1))
+      when %r{^Subnet Mask\s*:\s+(\S.*)}
+        add_ipmi_fact('subnet_mask', Regexp.last_match(1))
+      when %r{^MAC Address\s*:\s+(\S.*)}
+        add_ipmi_fact('macaddress', Regexp.last_match(1))
+      when %r{^Default Gateway IP\s*:\s+(\S.*)}
+        add_ipmi_fact('gateway', Regexp.last_match(1))
       end
     end
   end
 
-  def add_ipmi_fact name, value
+  def add_ipmi_fact(name, value)
     fact_names = []
-    if @channel_nr == 1 then fact_names.push("ipmi_#{name}") end
+    if @channel_nr == 1
+      fact_names.push("ipmi_#{name}")
+    end
     fact_names.push("ipmi#{@channel_nr}_#{name}")
-    fact_names.each do |name|
-      Facter.add(name) do
-        confine :kernel => "Linux"
+    fact_names.each do |fact_name|
+      Facter.add(fact_name) do
+        confine kernel: 'Linux'
         setcode do
           value
         end
@@ -74,7 +74,7 @@ class IPMIChannel
 end
 
 channel_array = (1..11).to_a
-channel_array.each do | channel |
+channel_array.each do |channel|
   @channel_nr = channel
   IPMIChannel.new(@channel_nr).load_facts
 end

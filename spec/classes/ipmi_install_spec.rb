@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ipmi::install', :type => :class do
+describe 'ipmi::install', type: :class do
   let :pre_condition do
     'include ipmi::params'
   end
@@ -8,33 +8,32 @@ describe 'ipmi::install', :type => :class do
   describe 'for osfamily RedHat' do
     let :facts do
       {
-        :osfamily          => 'RedHat',
+        osfamily: 'RedHat',
       }
     end
 
     describe 'el5.x' do
-      before { facts[:operatingsystemmajrelease] = '5' }
+      before(:each) { facts[:operatingsystemmajrelease] = '5' }
 
-      it { should create_class('ipmi::install') }
-      it { should contain_package('OpenIPMI').with_ensure('present') }
-      it { should contain_package('OpenIPMI-tools').with_ensure('present') }
+      it { is_expected.to create_class('ipmi::install') }
+      it { is_expected.to contain_package('OpenIPMI').with_ensure('present') }
+      it { is_expected.to contain_package('OpenIPMI-tools').with_ensure('present') }
     end
 
     describe 'el6.x' do
-      before { facts[:operatingsystemmajrelease] = '6' }
+      before(:each) { facts[:operatingsystemmajrelease] = '6' }
 
-      it { should create_class('ipmi::install') }
-      it { should contain_package('OpenIPMI').with_ensure('present') }
-      it { should contain_package('ipmitool').with_ensure('present') }
+      it { is_expected.to create_class('ipmi::install') }
+      it { is_expected.to contain_package('OpenIPMI').with_ensure('present') }
+      it { is_expected.to contain_package('ipmitool').with_ensure('present') }
     end
 
     describe 'el7.x' do
-      before { facts[:operatingsystemmajrelease] = '7' }
+      before(:each) { facts[:operatingsystemmajrelease] = '7' }
 
-      it { should create_class('ipmi::install') }
-      it { should contain_package('OpenIPMI').with_ensure('present') }
-      it { should contain_package('ipmitool').with_ensure('present') }
+      it { is_expected.to create_class('ipmi::install') }
+      it { is_expected.to contain_package('OpenIPMI').with_ensure('present') }
+      it { is_expected.to contain_package('ipmitool').with_ensure('present') }
     end
   end
-
 end
