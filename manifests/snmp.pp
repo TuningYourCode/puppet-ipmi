@@ -1,11 +1,9 @@
 # == Defined resource type: ipmi::snmp
 #
-
 define ipmi::snmp (
-  $snmp = 'public',
+  $snmp        = 'public',
   $lan_channel = 1,
-)
-{
+) {
   require ::ipmi
 
   validate_string($snmp)
@@ -13,6 +11,7 @@ define ipmi::snmp (
 
   exec { "ipmi_set_snmp_${lan_channel}":
     command => "/usr/bin/ipmitool lan set ${lan_channel} snmp ${snmp}",
-    onlyif  => "/usr/bin/test \"$(ipmitool lan print ${lan_channel} | grep 'SNMP Community String' | sed -e 's/.* : //g')\" != \"${snmp}\"",
+    onlyif  => "/usr/bin/test \"$(ipmitool lan print ${lan_channel}
+         | grep 'SNMP Community String' | sed -e 's/.* : //g')\" != \"${snmp}\"",
   }
 }

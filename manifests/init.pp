@@ -10,6 +10,7 @@ class ipmi (
   $snmps                  = {},
   $users                  = {},
   $networks               = {},
+  Integer $channel_id     = 1, # Normally the LAN channel
 ) inherits ipmi::params {
   validate_re($service_ensure, '^running$|^stopped$')
   validate_re($ipmievd_service_ensure, '^running$|^stopped$')
@@ -47,8 +48,8 @@ class ipmi (
   anchor { 'ipmi::end': }
 
   Anchor['ipmi::begin'] -> Class['::ipmi::install'] ~> Class['::ipmi::config']
-    ~> Class['::ipmi::service::ipmi'] ~> Class['::ipmi::service::ipmievd']
-    -> Anchor['ipmi::end']
+  ~> Class['::ipmi::service::ipmi'] ~> Class['::ipmi::service::ipmievd']
+  -> Anchor['ipmi::end']
 
   if $snmps {
     create_resources('ipmi::snmp', $snmps)

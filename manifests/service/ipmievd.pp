@@ -9,7 +9,7 @@ class ipmi::service::ipmievd (
   validate_re($ensure, '^running$|^stopped$')
   validate_bool($enable)
 
-  service{ 'ipmievd':
+  service { 'ipmievd':
     ensure     => $ensure,
     hasstatus  => true,
     hasrestart => true,
