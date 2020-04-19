@@ -49,18 +49,18 @@ Usage
 Create a user with admin privileges (default):
 ```puppet
    ipmi::user { 'newuser1':
-     user     => 'newuser1',
+     username     => 'newuser1',
      password => 'password1',
-     user_id  => 4,
+     id  => 4,
    }
 ```
 Create a user with operator privileges:
 ```puppet
    ipmi::user { 'newuser2':
-     user     => 'newuser2',
+     username     => 'newuser2',
      password => 'password2',
      priv     => 3,
-     user_id  => 5,
+     id  => 5,
    }
 ```
 Configure a static ip on IPMI lan channel 1:
@@ -128,9 +128,9 @@ Controls whether the IPMI watchdog is enabled.
 ```puppet
 # defaults
 ipmi::user { 'newuser':
-  user     => 'root',
+  username     => 'root',
   priv     => 4,           # Administrator
-  user_id  => 3,
+  id  => 3,
 }
 ```
 

@@ -1,18 +1,15 @@
 # == Defined resource type: ipmi::user
 #
 define ipmi::user (
-  $password,
-  $user    = 'root',
-  $priv    = 4,
-  $user_id = 3,
+  Enum[present, absent] $ensure = present,
+  Integer[1, default] $id,
+  String $username              = $title,
+  Optional[String] $password    = undef,
+  Integer[1, 4] $priv           = 4,
 ) {
   require ipmi
 
-  validate_string($password, $user)
-  validate_integer($priv)
-  validate_integer($user_id)
-
-  $privilege = case $priv {
+  $priv_text = case $priv {
     1: { 'CALLBACK' }
     2: { 'USER' }
     3: { 'OPERATOR' }
@@ -23,49 +20,53 @@ define ipmi::user (
   $channel = $ipmi::channel_id
 
   $tool = '/usr/bin/ipmitool'
-  $test = '/usr/bin/test'
 
-  exec { "ipmi_user_add_${title}":
-    command => "${tool} user set name ${user_id} ${user}",
-    unless  => "${test} \"$(${tool} user list ${channel} | grep '^${user_id}' | awk '{print \$2}')\" = \"${user}\"",
-    notify  => [
-      Exec["ipmi_user_priv_${title}"],
-      Exec["ipmi_user_setpw_${title}"],
-    ],
-  }
+  if $ensure == present {
 
-  exec { "ipmi_user_priv_${title}":
-    command => "${tool} user priv ${user_id} ${priv} ${channel}",
-    unless  => "${test} \"$(${tool} user list ${channel} | grep '^${user_id}' | awk '{print \$6}')\" = ${privilege}",
-    notify  => [
-      Exec["ipmi_user_enable_${title}"],
+    exec { "ipmi_user_add_${title}":
+      command => "${tool} user set name ${id} ${username}",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^User Name.*${username}$'",
+    }
+
+    $refresh_execs = [
       Exec["ipmi_user_enable_sol_${title}"],
-      Exec["ipmi_user_channel_setaccess_${title}"],
-    ],
+    ]
+
+    exec { "ipmi_user_priv_${title}":
+      command => "${tool} channel setaccess ${channel} ${id} callin=on ipmi=on link=on privilege=${priv}",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Privilege Level.*${priv_text}$'",
+      require => Exec["ipmi_user_add_${title}"],
+      notify  => $refresh_execs,
+    }
+
+    if $password {
+      exec { "ipmi_user_setpw_${title}":
+        command => "${tool} user set password ${id} \'${password}\'",
+        unless  => "${tool} user test ${id} 16 \'${password}\'",
+        require => Exec["ipmi_user_add_${title}"],
+        notify  => $refresh_execs,
+      }
+    }
+
+    exec { "ipmi_user_enable_${title}":
+      command => "${tool} user enable ${id}",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Enable Status.*enabled$'",
+      require => Exec["ipmi_user_add_${title}"],
+      notify  => $refresh_execs,
+    }
+
+    exec { "ipmi_user_enable_sol_${title}":
+      command     => "${tool} sol payload enable ${channel} ${id}",
+      refreshonly => true,
+    }
+
+  } else {
+
+    exec { "ipmi_user_disable_${title}":
+      command => "${tool} user disable ${id}",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Enable Status.*disabled$'",
+    }
+
   }
 
-  exec { "ipmi_user_setpw_${title}":
-    command => "${tool} user set password ${user_id} \'${password}\'",
-    unless  => "${tool} user test ${user_id} 16 \'${password}\'",
-    notify  => [
-      Exec["ipmi_user_enable_${title}"],
-      Exec["ipmi_user_enable_sol_${title}"],
-      Exec["ipmi_user_channel_setaccess_${title}"],
-    ],
-  }
-
-  exec { "ipmi_user_enable_${title}":
-    command     => "${tool} user enable ${user_id}",
-    refreshonly => true,
-  }
-
-  exec { "ipmi_user_enable_sol_${title}":
-    command     => "${tool} sol payload enable ${channel} ${user_id}",
-    refreshonly => true,
-  }
-
-  exec { "ipmi_user_channel_setaccess_${title}":
-    command     => "${tool} channel setaccess ${channel} ${user_id} callin=on ipmi=on link=on privilege=${priv}",
-    refreshonly => true,
-  }
 }

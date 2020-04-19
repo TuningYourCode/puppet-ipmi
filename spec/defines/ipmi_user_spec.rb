@@ -3,83 +3,77 @@ require 'spec_helper'
 describe 'ipmi::user', type: :define do
   let(:facts) do
     {
-      operatingsystem: 'RedHat',
-      osfamily: 'redhat',
-      operatingsystemmajrelease: '7',
+        operatingsystem: 'Ubuntu',
+        osfamily: 'debian',
+        operatingsystemmajrelease: '18.04',
     }
   end
 
   let(:title) { 'newuser' }
 
-  describe 'when deploying with all params' do
+  describe 'when deploying with minimum params' do
     let(:params) do
       {
-        password: 'password',
+          id: 3,
       }
     end
 
-    it { is_expected.to contain_exec('ipmi_user_enable_newuser').with('refreshonly' => 'true') }
+    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_comes_before('Exec[ipmi_user_priv_newuser]') }
+    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_comes_before('Exec[ipmi_user_enable_newuser]') }
 
-    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_notifies('Exec[ipmi_user_priv_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_notifies('Exec[ipmi_user_setpw_newuser]') }
+    it { is_expected.to contain_exec('ipmi_user_enable_newuser') }
 
-    it { is_expected.to contain_exec('ipmi_user_priv_newuser').that_notifies('Exec[ipmi_user_enable_newuser]') }
     it { is_expected.to contain_exec('ipmi_user_priv_newuser').that_notifies('Exec[ipmi_user_enable_sol_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_priv_newuser').that_notifies('Exec[ipmi_user_channel_setaccess_newuser]') }
-
-    it { is_expected.to contain_exec('ipmi_user_setpw_newuser').that_notifies('Exec[ipmi_user_enable_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_setpw_newuser').that_notifies('Exec[ipmi_user_enable_sol_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_setpw_newuser').that_notifies('Exec[ipmi_user_channel_setaccess_newuser]') }
 
     it { is_expected.to contain_exec('ipmi_user_enable_sol_newuser').with('refreshonly' => 'true') }
-    it { is_expected.to contain_exec('ipmi_user_channel_setaccess_newuser').with('refreshonly' => 'true') }
   end
 
   describe 'when deploying with all params' do
     let(:params) do
       {
-        user: 'newuser1',
-        password: 'password',
-        priv: 3,
-        user_id: 4,
+          username: 'newuser1',
+          password: 'password',
+          priv: 3,
+          id: 4,
       }
     end
 
-    it { is_expected.to contain_exec('ipmi_user_enable_newuser').with('refreshonly' => 'true') }
+    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_comes_before('Exec[ipmi_user_priv_newuser]') }
+    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_comes_before('Exec[ipmi_user_setpw_newuser]') }
+    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_comes_before('Exec[ipmi_user_enable_newuser]') }
 
-    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_notifies('Exec[ipmi_user_priv_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_add_newuser').that_notifies('Exec[ipmi_user_setpw_newuser]') }
+    it { is_expected.to contain_exec('ipmi_user_enable_newuser') }
 
-    it { is_expected.to contain_exec('ipmi_user_priv_newuser').that_notifies('Exec[ipmi_user_enable_newuser]') }
     it { is_expected.to contain_exec('ipmi_user_priv_newuser').that_notifies('Exec[ipmi_user_enable_sol_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_priv_newuser').that_notifies('Exec[ipmi_user_channel_setaccess_newuser]') }
 
-    it { is_expected.to contain_exec('ipmi_user_setpw_newuser').that_notifies('Exec[ipmi_user_enable_newuser]') }
     it { is_expected.to contain_exec('ipmi_user_setpw_newuser').that_notifies('Exec[ipmi_user_enable_sol_newuser]') }
-    it { is_expected.to contain_exec('ipmi_user_setpw_newuser').that_notifies('Exec[ipmi_user_channel_setaccess_newuser]') }
 
     it { is_expected.to contain_exec('ipmi_user_enable_sol_newuser').with('refreshonly' => 'true') }
-    it { is_expected.to contain_exec('ipmi_user_channel_setaccess_newuser').with('refreshonly' => 'true') }
   end
 
-  describe 'when deploying with no params' do
-    it 'fails and raise password required error' do
-      expect { is_expected.to contain_exec('ipmi_user_enable_newuser') }.to raise_error(Puppet::Error, %r{password})
+  describe 'when deploying absent' do
+    let(:params) do
+      {
+          ensure: 'absent',
+          id: 3,
+      }
     end
+
+    it { is_expected.to contain_exec('ipmi_user_disable_newuser') }
   end
 
   describe 'when deploying with invalid priv' do
     let(:params) do
       {
-        user: 'newuser1',
-        password: 'password',
-        priv: 5,
-        user_id: 4,
+          user: 'newuser1',
+          password: 'password',
+          priv: 5,
+          id: 4,
       }
     end
 
     it 'fails and raise invalid privilege error' do
-      expect { is_expected.to contain_exec('ipmi_user_enable_newuser') }.to raise_error(Puppet::Error, %r{invalid privilege level specified})
+      expect { is_expected.to contain_exec('ipmi_user_enable_newuser') }.to raise_error(Puppet::PreformattedError, %r{'priv' expects an Integer\[1, 4\]})
     end
   end
 end

@@ -1,5 +1,6 @@
 ipmi::user { 'test':
-  user     => 'test',
+  ensure   => present,
+  username => 'test',
   password => 'password',
-  user_id  => 4,
+  id       => 4,
 }
