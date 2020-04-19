@@ -6,6 +6,7 @@
       <w>ipmi</w>
       <w>ipmitool</w>
       <w>puppetlabs</w>
+      <w>setcode</w>
     </words>
   </dictionary>
 </component>

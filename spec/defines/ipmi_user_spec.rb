@@ -3,9 +3,9 @@ require 'spec_helper'
 describe 'ipmi::user', type: :define do
   let(:facts) do
     {
-        operatingsystem: 'Ubuntu',
-        osfamily: 'debian',
-        operatingsystemmajrelease: '18.04',
+      operatingsystem: 'Ubuntu',
+      osfamily: 'debian',
+      operatingsystemmajrelease: '18.04',
     }
   end
 
@@ -14,7 +14,7 @@ describe 'ipmi::user', type: :define do
   describe 'when deploying with minimum params' do
     let(:params) do
       {
-          id: 3,
+        id: 3,
       }
     end
 
@@ -31,10 +31,10 @@ describe 'ipmi::user', type: :define do
   describe 'when deploying with all params' do
     let(:params) do
       {
-          username: 'newuser1',
-          password: 'password',
-          priv: 3,
-          id: 4,
+        username: 'newuser1',
+        password: 'password',
+        priv: 3,
+        id: 4,
       }
     end
 
@@ -54,8 +54,8 @@ describe 'ipmi::user', type: :define do
   describe 'when deploying absent' do
     let(:params) do
       {
-          ensure: 'absent',
-          id: 3,
+        ensure: 'absent',
+        id: 3,
       }
     end
 
@@ -65,10 +65,10 @@ describe 'ipmi::user', type: :define do
   describe 'when deploying with invalid priv' do
     let(:params) do
       {
-          user: 'newuser1',
-          password: 'password',
-          priv: 5,
-          id: 4,
+        user: 'newuser1',
+        password: 'password',
+        priv: 5,
+        id: 4,
       }
     end
 

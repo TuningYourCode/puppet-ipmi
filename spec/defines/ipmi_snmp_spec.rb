@@ -3,9 +3,9 @@ require 'spec_helper'
 describe 'ipmi::snmp', type: :define do
   let(:facts) do
     {
-        operatingsystem: 'Ubuntu',
-        osfamily: 'debian',
-        operatingsystemmajrelease: '18.04',
+      operatingsystem: 'Ubuntu',
+      osfamily: 'debian',
+      operatingsystemmajrelease: '18.04',
     }
   end
 
@@ -18,8 +18,8 @@ describe 'ipmi::snmp', type: :define do
   describe 'when deploying with all params' do
     let(:params) do
       {
-          snmp: 'secret',
-          lan_channel: 2,
+        snmp: 'secret',
+        lan_channel: 2,
       }
     end
 
@@ -29,8 +29,8 @@ describe 'ipmi::snmp', type: :define do
   describe 'when deploying with invalid type' do
     let(:params) do
       {
-          snmp: 'secret',
-          lan_channel: 'a',
+        snmp: 'secret',
+        lan_channel: 'a',
       }
     end
 

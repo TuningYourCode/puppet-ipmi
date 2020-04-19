@@ -1,8 +1,8 @@
 # == Defined resource type: ipmi::user
 #
 define ipmi::user (
-  Enum[present, absent] $ensure = present,
   Integer[1, default] $id,
+  Enum[present, absent] $ensure = present,
   String $username              = $title,
   Optional[String] $password    = undef,
   Integer[1, 4] $priv           = 4,
