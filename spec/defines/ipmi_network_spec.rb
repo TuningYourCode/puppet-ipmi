@@ -64,5 +64,4 @@ describe 'ipmi::network', type: :define do
     it { is_expected.to contain_exec('ipmi_set_static_1').that_notifies('Exec[ipmi_set_defgw_1]') }
     it { is_expected.to contain_exec('ipmi_set_static_1').that_notifies('Exec[ipmi_set_netmask_1]') }
   end
-
 end

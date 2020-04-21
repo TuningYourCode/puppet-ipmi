@@ -25,5 +25,4 @@ describe 'ipmi::snmp', type: :define do
 
     it { is_expected.to contain_exec('ipmi_set_snmp_1') }
   end
-
 end

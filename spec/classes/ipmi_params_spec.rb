@@ -21,15 +21,6 @@ describe 'ipmi::params', type: :class do
 
       it { is_expected.to create_class('ipmi::params') }
     end
-
-    describe 'unsupported operatingsystemmajrelease' do
-      before(:each) { facts[:operatingsystemmajrelease] = '1' }
-
-      it 'fails' do
-        expect { is_expected.to create_class('ipmi::params') }
-          .to raise_error(Puppet::Error, %r{not supported on operatingsystemmajrelease 1})
-      end
-    end
   end
 
   describe 'for osfamily Debian' do
@@ -45,15 +36,6 @@ describe 'ipmi::params', type: :class do
       before(:each) { facts[:operatingsystem] = 'Ubuntu' }
 
       it { is_expected.to create_class('ipmi::params') }
-    end
-
-    describe 'unsupported Debian based operatingsystem' do
-      before(:each) { facts[:operatingsystem] = 'LinuxMint' }
-
-      it 'fails' do
-        expect { is_expected.to contain_class('ipmi::params') }
-          .to raise_error(Puppet::Error, %r{Module ipmi is not supported on operatingsystem LinuxMint})
-      end
     end
   end
 

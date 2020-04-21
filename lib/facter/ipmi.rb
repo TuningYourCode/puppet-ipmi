@@ -35,11 +35,9 @@ def load_net_facts
 end
 
 def load_user_facts
-
   users = []
-
   max_id = max_users
-  return unless max_id and max_id > 0
+  return unless max_id && max_id > 0
 
   (1..max_id).to_a.each do |id|
     username = '' # Anonymous users exist
@@ -79,25 +77,25 @@ def load_user_facts
       end
     end
 
-    if enabled or fixed_name or !username.empty?
-      user = {
-          :id => id,
-          :username => username,
-          :fixed_name => fixed_name,
-          :enabled => enabled,
-      }
-      if priv
-        user[:priv] = priv
-      end
-      users << user
+    next if !enabled && !fixed_name && username.empty?
+
+    user = {
+      id: id,
+      username: username,
+      fixed_name: fixed_name,
+      enabled: enabled,
+    }
+    if priv
+      user[:priv] = priv
     end
+    users << user
   end
 
   add_ipmi_fact 'users', users
 end
 
 def max_users
-  output = Facter::Core::Execution.execute("ipmitool user summary 2>&1")
+  output = Facter::Core::Execution.execute('ipmitool user summary 2>&1')
   output.each_line do |line|
     if line =~ %r{^Maximum IDs\s*:\s*(\d+)}
       return Regexp.last_match(1).to_i

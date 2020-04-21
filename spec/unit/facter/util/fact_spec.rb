@@ -46,7 +46,7 @@ Maximum User IDs     : 10
 Enabled User IDs     : 2
 
 User ID              : 1
-User Name            : 
+User Name            :
 Fixed Name           : Yes
 Access Available     : call-in / callback
 Link Authentication  : disabled
@@ -85,7 +85,7 @@ Maximum User IDs     : 10
 Enabled User IDs     : 2
 
 User ID              : 4
-User Name            : 
+User Name            :
 Fixed Name           : No
 Access Available     : call-in / callback
 Link Authentication  : disabled
@@ -113,7 +113,7 @@ Enable Status        : disabled
         expect(Facter.value(:ipmi_subnet_mask)).to eq('255.255.255.0')
         expect(Facter.value(:ipmi_macaddress)).to eq('3c:a8:2a:9f:9a:92')
         expect(Facter.value(:ipmi_gateway)).to eq('192.168.0.1')
-        #noinspection RubyStringKeysInHashInspection
+        # noinspection RubyStringKeysInHashInspection
         expect(Facter.value(:ipmi_users)).to eq([
                                                     {
                                                         'id' => 1,
