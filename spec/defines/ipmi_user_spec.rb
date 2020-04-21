@@ -6,6 +6,7 @@ describe 'ipmi::user', type: :define do
       operatingsystem: 'Ubuntu',
       osfamily: 'debian',
       operatingsystemmajrelease: '18.04',
+      ipmi_channel: 1,
     }
   end
 

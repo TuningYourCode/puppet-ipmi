@@ -4,63 +4,61 @@
 # parameter documentation.
 #
 class ipmi (
-  $service_ensure         = 'running',
-  $ipmievd_service_ensure = 'stopped',
-  $watchdog               = false,
-  $snmps                  = {},
-  $users                  = {},
-  $networks               = {},
-  Integer $channel_id     = 1, # Normally the LAN channel
+  Enum[present, absent] $ensure                  = present,
+  Enum[running, stopped] $ipmievd_service_ensure = stopped,
+  Boolean $watchdog                              = false,
+  Hash $snmps                                    = {},
+  Hash $users                                    = {},
+  Boolean $purge_users                           = false,
+  Boolean $foreman_user                          = false,
+  Hash $networks                                 = {},
 ) inherits ipmi::params {
-  validate_re($service_ensure, '^running$|^stopped$')
-  validate_re($ipmievd_service_ensure, '^running$|^stopped$')
-  validate_bool($watchdog)
 
-  validate_hash($snmps)
-  validate_hash($users)
-  validate_hash($networks)
+  if $ensure == present {
 
-  $enable_ipmi = $service_ensure ? {
-    'running' => true,
-    'stopped' => false,
-  }
+    $watchdog_str = $watchdog ? {
+      true    => 'yes',
+      default => 'no',
+    }
 
-  $enable_ipmievd = $ipmievd_service_ensure ? {
-    'running' => true,
-    'stopped' => false,
-  }
+    package { $ipmi::params::ipmi_package:
+      ensure => present,
+    }
+    ~> augeas { $ipmi::params::config_location:
+      context => "/files${ipmi::params::config_location}",
+      changes => "set IPMI_WATCHDOG ${watchdog_str}",
+    }
+    ~> service { $ipmi::params::ipmi_service_name:
+      ensure     => running,
+      enable     => true,
+      hasstatus  => true,
+      hasrestart => true,
+    }
+    ~> service { 'ipmievd':
+      ensure     => $ipmievd_service_ensure,
+      enable     => $ipmievd_service_ensure == running,
+      hasstatus  => true,
+      hasrestart => true,
+    }
 
-  include ::ipmi::install
-  include ::ipmi::config
+    if $snmps {
+      create_resources('ipmi::snmp', $snmps)
+    }
 
-  class { '::ipmi::service::ipmi':
-    ensure            => $service_ensure,
-    enable            => $enable_ipmi,
-    ipmi_service_name => $ipmi::params::ipmi_service_name,
-  }
+    if $users {
+      create_resources('ipmi::user', $users)
+    }
 
-  class { '::ipmi::service::ipmievd':
-    ensure => $ipmievd_service_ensure,
-    enable => $enable_ipmievd,
-  }
+    if $networks {
+      create_resources('ipmi::network', $networks)
+    }
 
-  anchor { 'ipmi::begin': }
-  anchor { 'ipmi::end': }
+  } else {
 
-  Anchor['ipmi::begin'] -> Class['::ipmi::install'] ~> Class['::ipmi::config']
-  ~> Class['::ipmi::service::ipmi'] ~> Class['::ipmi::service::ipmievd']
-  -> Anchor['ipmi::end']
+    package { $ipmi::params::ipmi_package:
+      ensure => absent,
+    }
 
-  if $snmps {
-    create_resources('ipmi::snmp', $snmps)
-  }
-
-  if $users {
-    create_resources('ipmi::user', $users)
-  }
-
-  if $networks {
-    create_resources('ipmi::network', $networks)
   }
 
 }

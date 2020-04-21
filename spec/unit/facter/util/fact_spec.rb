@@ -107,21 +107,12 @@ Enable Status        : disabled
       let(:facts) { {kernel: 'Linux'} }
 
       it do
+        expect(Facter.value(:ipmi_channel)).to eq(1)
         expect(Facter.value(:ipmi_ipaddress)).to eq('192.168.0.37')
-      end
-      it do
         expect(Facter.value(:ipmi_ipaddress_source)).to eq('DHCP Address')
-      end
-      it do
         expect(Facter.value(:ipmi_subnet_mask)).to eq('255.255.255.0')
-      end
-      it do
         expect(Facter.value(:ipmi_macaddress)).to eq('3c:a8:2a:9f:9a:92')
-      end
-      it do
         expect(Facter.value(:ipmi_gateway)).to eq('192.168.0.1')
-      end
-      it do
         #noinspection RubyStringKeysInHashInspection
         expect(Facter.value(:ipmi_users)).to eq([
                                                     {
@@ -148,11 +139,15 @@ Enable Status        : disabled
       end
     end
 
-    context 'returns nil when ipmitool not present' do
+    context 'returns only channel when ipmitool not present' do
       before(:each) do
         Facter::Core::Execution.expects(:which).at_least(1).with('ipmitool').returns(false)
+        Facter.fact(:kernel).stubs(:value).returns('Linux')
       end
+      let(:facts) { {kernel: 'Linux'} }
+
       it do
+        expect(Facter.value(:ipmi_channel)).to eq(1)
         expect(Facter.value(:ipmi_ipaddress)).to be_nil
         expect(Facter.value(:ipmi_users)).to be_nil
       end

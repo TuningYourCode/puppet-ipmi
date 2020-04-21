@@ -6,8 +6,9 @@ All notable changes after forking will be documented in this file.
 
 **Features**
 - Converted to PDK
-- Allow stdlib up to version < 7.0.0
+- Allow `stdlib` up to version < 7.0.0
 - Simplifying by restricting to channel 1 only
+- Allow `ensure => absent` to remove `ipmi`
 
 **Bugfixes**
 

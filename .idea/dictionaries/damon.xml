@@ -1,13 +1,19 @@
 <component name="ProjectDictionaryState">
   <dictionary name="damon">
     <words>
+      <w>bugfixes</w>
       <w>dhcp</w>
       <w>facter</w>
       <w>getaccess</w>
       <w>ipaddress</w>
       <w>ipmi</w>
+      <w>ipmievd</w>
       <w>ipmitool</w>
       <w>macaddress</w>
+      <w>openipmi</w>
+      <w>operatingsystem</w>
+      <w>operatingsystemmajrelease</w>
+      <w>osfamily</w>
       <w>priv</w>
       <w>puppetlabs</w>
       <w>setcode</w>

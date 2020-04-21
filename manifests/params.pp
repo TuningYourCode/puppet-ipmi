@@ -3,6 +3,7 @@
 # This class should be considered private.
 #
 class ipmi::params {
+  $channel = $facts['ipmi_channel']
   case $::osfamily {
     'redhat': {
       case $::operatingsystemmajrelease {

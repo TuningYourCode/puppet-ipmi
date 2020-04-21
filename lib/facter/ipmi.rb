@@ -115,6 +115,7 @@ def add_ipmi_fact(name, value)
   end
 end
 
+add_ipmi_fact 'channel', @channel_id
 if Facter::Core::Execution.which('ipmitool')
   load_net_facts
   load_user_facts

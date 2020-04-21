@@ -17,8 +17,7 @@ define ipmi::user (
     default: { fail('invalid privilege level specified') }
   }
 
-  $channel = $ipmi::channel_id
-
+  $channel = $ipmi::params::channel
   $tool = '/usr/bin/ipmitool'
 
   if $ensure == present {
