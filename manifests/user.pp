@@ -25,7 +25,7 @@ define ipmi::user (
 
     exec { "ipmi_user_add_${title}":
       command => "${tool} user set name ${id} ${username}",
-      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^User Name.*${username}$'",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^User Name.*: ${username}$'",
     }
 
     $refresh_execs = [
@@ -34,7 +34,7 @@ define ipmi::user (
 
     exec { "ipmi_user_priv_${title}":
       command => "${tool} channel setaccess ${channel} ${id} callin=on ipmi=on link=on privilege=${priv}",
-      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Privilege Level.*${priv_text}$'",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Privilege Level.*: ${priv_text}$'",
       require => Exec["ipmi_user_add_${title}"],
       notify  => $refresh_execs,
     }
@@ -50,7 +50,7 @@ define ipmi::user (
 
     exec { "ipmi_user_enable_${title}":
       command => "${tool} user enable ${id}",
-      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Enable Status.*enabled$'",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Enable Status.*: enabled$'",
       require => Exec["ipmi_user_add_${title}"],
       notify  => $refresh_execs,
     }
@@ -64,7 +64,7 @@ define ipmi::user (
 
     exec { "ipmi_user_disable_${title}":
       command => "${tool} user disable ${id}",
-      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Enable Status.*disabled$'",
+      unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Enable Status.*: disabled$'",
     }
 
   }

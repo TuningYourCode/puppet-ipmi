@@ -3,8 +3,12 @@
     <words>
       <w>dhcp</w>
       <w>facter</w>
+      <w>getaccess</w>
+      <w>ipaddress</w>
       <w>ipmi</w>
       <w>ipmitool</w>
+      <w>macaddress</w>
+      <w>priv</w>
       <w>puppetlabs</w>
       <w>setcode</w>
     </words>

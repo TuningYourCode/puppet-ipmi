@@ -1,0 +1,121 @@
+#!/usr/bin/env ruby
+#
+# IPMI facts, in a format compatible with The Foreman
+#
+# Sending these facts to a Puppet Server equipped with Foreman
+# will cause the latter to create the BMC interfaces the next time the
+# Puppet agent runs. One then only has to manually add the access
+# credentials, and presto, you can run basic IPMI actions (e.g. reboot
+# to PXE) from The Foreman's web UI.
+#
+# === Fact Format (for Foreman compatibility)
+#
+#     ipmi_ipaddress = 192.168.101.1
+#     ipmi_subnet_mask = 255.255.255.0
+#     ...
+
+@channel_id = 1
+
+def load_net_facts
+  output = Facter::Core::Execution.execute("ipmitool lan print #{@channel_id} 2>&1")
+  output.each_line do |line|
+    case line.strip
+    when %r{^IP Address\s*:\s+(\S.*)}
+      add_ipmi_fact('ipaddress', Regexp.last_match(1))
+    when %r{^IP Address Source\s*:\s+(\S.*)}
+      add_ipmi_fact('ipaddress_source', Regexp.last_match(1))
+    when %r{^Subnet Mask\s*:\s+(\S.*)}
+      add_ipmi_fact('subnet_mask', Regexp.last_match(1))
+    when %r{^MAC Address\s*:\s+(\S.*)}
+      add_ipmi_fact('macaddress', Regexp.last_match(1))
+    when %r{^Default Gateway IP\s*:\s+(\S.*)}
+      add_ipmi_fact('gateway', Regexp.last_match(1))
+    end
+  end
+end
+
+def load_user_facts
+
+  users = []
+
+  max_id = max_users
+  return unless max_id and max_id > 0
+
+  (1..max_id).to_a.each do |id|
+    username = '' # Anonymous users exist
+    priv = nil
+    fixed_name = nil
+    enabled = nil
+    output = Facter::Core::Execution.execute("ipmitool channel getaccess #{@channel_id} #{id} 2>&1")
+    output.each_line do |line|
+      case line.strip
+      when %r{^User Name\s*:\s*(\S.*)}
+        username = Regexp.last_match(1)
+      when %r{^Fixed Name\s*:\s*(\S.*)}
+        case Regexp.last_match(1)
+        when 'Yes'
+          fixed_name = true
+        when 'No'
+          fixed_name = false
+        end
+      when %r{^Enable Status\s*:\s*(\S.*)}
+        case Regexp.last_match(1)
+        when 'enabled'
+          enabled = true
+        when 'disabled'
+          enabled = false
+        end
+      when %r{^Privilege Level\s*:\s*(\S.*)}
+        case Regexp.last_match(1)
+        when 'CALLBACK'
+          priv = 1
+        when 'USER'
+          priv = 2
+        when 'OPERATOR'
+          priv = 3
+        when 'ADMINISTRATOR'
+          priv = 4
+        end
+      end
+    end
+
+    if enabled or fixed_name or !username.empty?
+      user = {
+          :id => id,
+          :username => username,
+          :fixed_name => fixed_name,
+          :enabled => enabled,
+      }
+      if priv
+        user[:priv] = priv
+      end
+      users << user
+    end
+  end
+
+  add_ipmi_fact 'users', users
+end
+
+def max_users
+  output = Facter::Core::Execution.execute("ipmitool user summary 2>&1")
+  output.each_line do |line|
+    if line =~ %r{^Maximum IDs\s*:\s*(\d+)}
+      return Regexp.last_match(1).to_i
+    end
+  end
+  nil
+end
+
+def add_ipmi_fact(name, value)
+  Facter.add("ipmi_#{name}") do
+    confine kernel: 'Linux'
+    setcode do
+      value
+    end
+  end
+end
+
+if Facter::Core::Execution.which('ipmitool')
+  load_net_facts
+  load_user_facts
+end
