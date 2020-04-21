@@ -1,11 +1,11 @@
 # == Defined resource type: ipmi::user
 #
 define ipmi::user (
-  Integer[1, default] $id,
-  Enum[present, absent] $ensure = present,
-  String $username              = $title,
-  Optional[String] $password    = undef,
-  Integer[1, 4] $privilege      = 4,
+  Integer[1] $id,
+  Enum[present, enabled, absent, disabled] $ensure = present,
+  String $username                                 = $title,
+  Optional[String] $password                       = undef,
+  Integer[1, 4] $privilege                         = 4,
 ) {
   require ipmi
 

@@ -63,6 +63,17 @@ describe 'ipmi::user', type: :define do
     it { is_expected.to contain_exec('ipmi_user_disable_newuser') }
   end
 
+  describe 'disabled is alias for absent' do
+    let(:params) do
+      {
+        ensure: 'disabled',
+        id: 3,
+      }
+    end
+
+    it { is_expected.to contain_exec('ipmi_user_disable_newuser') }
+  end
+
   describe 'when deploying with invalid privilege' do
     let(:params) do
       {
