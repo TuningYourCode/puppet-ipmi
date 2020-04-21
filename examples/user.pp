@@ -1,6 +1,5 @@
-ipmi::user { 'test':
+ipmi::user { 'ADMIN':
   ensure   => present,
-  username => 'test',
-  password => 'password',
   id       => 4,
+  password => 'password',
 }

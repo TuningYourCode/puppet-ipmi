@@ -41,17 +41,34 @@ class ipmi (
       hasrestart => true,
     }
 
-    if $snmps {
-      create_resources('ipmi::snmp', $snmps)
+    $foreman_user_interface = if $foreman_user and $::foreman_interfaces {
+      $foreman_user_interfaces = $::foreman_interfaces.filter |$interface| {
+        $interface['type'] == 'BMC' and !empty($interface['username'])
+      }
+      $foreman_user_interfaces[0]
+    } else {
+      undef
+    }
+    $users_foreman = if $foreman_user_interface {
+      $existing_user = $facts['ipmi_users'].filter |$user| {
+        $user['username'] == $foreman_user_interface['username']
+      }[0]
+      $id = if $existing_user {
+        $existing_user['id']
+      } else {
+        $facts['ipmi_users'].map |$user| { $user['id'] }.max + 1
+      }
+      [$foreman_user_interface['username'], {
+        id       => $id,
+        password => $foreman_user_interface['password'],
+      }]
+    } else {
+      {}
     }
 
-    if $users {
-      create_resources('ipmi::user', $users)
-    }
-
-    if $networks {
-      create_resources('ipmi::network', $networks)
-    }
+    create_resources('ipmi::user', $users + $users_foreman)
+    create_resources('ipmi::snmp', $snmps)
+    create_resources('ipmi::network', $networks)
 
   } else {
 
