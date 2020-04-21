@@ -3,7 +3,7 @@
 define ipmi::snmp (
   String $snmp = 'public',
 ) {
-  require ipmi
+  include ipmi::params
 
   $channel = $ipmi::params::channel
 

@@ -6,7 +6,7 @@ define ipmi::network (
   Stdlib::IP::Address::V4::Nosubnet $gateway = '0.0.0.0',
   Enum['dhcp', 'static'] $type               = 'dhcp',
 ) {
-  require ::ipmi
+  include ipmi::params
 
   $channel = $ipmi::params::channel
 

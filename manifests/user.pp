@@ -7,7 +7,7 @@ define ipmi::user (
   Optional[String] $password                       = undef,
   Integer[1, 4] $privilege                         = 4,
 ) {
-  require ipmi
+  include ipmi::params
 
   $priv_text = case $privilege {
     1: { 'CALLBACK' }

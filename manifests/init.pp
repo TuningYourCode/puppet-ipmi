@@ -13,14 +13,13 @@ class ipmi (
   Integer[1, 4] $foreman_user_privilege          = 4,
   Hash $networks                                 = {},
   Hash $snmps                                    = {},
-) inherits ipmi::params {
+) {
+
+  include ipmi::params
 
   if $ensure == present {
 
-    $watchdog_str = $watchdog ? {
-      true    => 'yes',
-      default => 'no',
-    }
+    $watchdog_str = if $watchdog { 'yes' } else { 'no' }
 
     package { $ipmi::params::ipmi_package:
       ensure => present,
@@ -41,6 +40,10 @@ class ipmi (
       hasstatus  => true,
       hasrestart => true,
     }
+
+    Service[$ipmi::params::ipmi_service_name] -> Ipmi::User <| |>
+    Service[$ipmi::params::ipmi_service_name] -> Ipmi::Network <| |>
+    Service[$ipmi::params::ipmi_service_name] -> Ipmi::Snmp <| |>
 
     $foreman_bmc = if $foreman_user and $::foreman_interfaces {
       $foreman_bmcs = $::foreman_interfaces.filter |$interface| {
