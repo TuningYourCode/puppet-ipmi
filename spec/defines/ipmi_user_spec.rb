@@ -34,7 +34,7 @@ describe 'ipmi::user', type: :define do
       {
         username: 'newuser1',
         password: 'password',
-        priv: 3,
+        privilege: 3,
         id: 4,
       }
     end
@@ -63,18 +63,18 @@ describe 'ipmi::user', type: :define do
     it { is_expected.to contain_exec('ipmi_user_disable_newuser') }
   end
 
-  describe 'when deploying with invalid priv' do
+  describe 'when deploying with invalid privilege' do
     let(:params) do
       {
         user: 'newuser1',
         password: 'password',
-        priv: 5,
+        privilege: 5,
         id: 4,
       }
     end
 
     it 'fails and raise invalid privilege error' do
-      expect { is_expected.to contain_exec('ipmi_user_enable_newuser') }.to raise_error(Puppet::PreformattedError, %r{'priv' expects an Integer\[1, 4\]})
+      expect { is_expected.to contain_exec('ipmi_user_enable_newuser') }.to raise_error(Puppet::PreformattedError, %r{'privilege' expects an Integer\[1, 4\]})
     end
   end
 end

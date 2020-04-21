@@ -1,9 +1,6 @@
 Puppet ipmi Module
 ==================
 
-[![Build Status](https://travis-ci.org/jhoblitt/puppet-ipmi.png)](https://travis-ci.org/jhoblitt/puppet-ipmi)
-
-
 #### Table of Contents
 
 1. [Overview](#overview)
@@ -59,7 +56,7 @@ Create a user with operator privileges:
    ipmi::user { 'newuser2':
      username     => 'newuser2',
      password => 'password2',
-     priv     => 3,
+     privilege     => 3,
      id  => 5,
    }
 ```
@@ -129,7 +126,7 @@ Controls whether the IPMI watchdog is enabled.
 # defaults
 ipmi::user { 'newuser':
   username     => 'root',
-  priv     => 4,           # Administrator
+  privilege     => 4,           # Administrator
   id  => 3,
 }
 ```

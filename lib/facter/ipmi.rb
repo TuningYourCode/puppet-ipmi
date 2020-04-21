@@ -41,7 +41,7 @@ def load_user_facts
 
   (1..max_id).to_a.each do |id|
     username = '' # Anonymous users exist
-    priv = nil
+    privilege = nil
     fixed_name = nil
     enabled = nil
     output = Facter::Core::Execution.execute("ipmitool channel getaccess #{@channel_id} #{id} 2>&1")
@@ -66,13 +66,13 @@ def load_user_facts
       when %r{^Privilege Level\s*:\s*(\S.*)}
         case Regexp.last_match(1)
         when 'CALLBACK'
-          priv = 1
+          privilege = 1
         when 'USER'
-          priv = 2
+          privilege = 2
         when 'OPERATOR'
-          priv = 3
+          privilege = 3
         when 'ADMINISTRATOR'
-          priv = 4
+          privilege = 4
         end
       end
     end
@@ -85,8 +85,8 @@ def load_user_facts
       fixed_name: fixed_name,
       enabled: enabled,
     }
-    if priv
-      user[:priv] = priv
+    if privilege
+      user[:privilege] = privilege
     end
     users << user
   end

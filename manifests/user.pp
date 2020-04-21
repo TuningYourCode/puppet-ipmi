@@ -5,11 +5,11 @@ define ipmi::user (
   Enum[present, absent] $ensure = present,
   String $username              = $title,
   Optional[String] $password    = undef,
-  Integer[1, 4] $priv           = 4,
+  Integer[1, 4] $privilege      = 4,
 ) {
   require ipmi
 
-  $priv_text = case $priv {
+  $priv_text = case $privilege {
     1: { 'CALLBACK' }
     2: { 'USER' }
     3: { 'OPERATOR' }
@@ -32,7 +32,7 @@ define ipmi::user (
     ]
 
     exec { "ipmi_user_priv_${title}":
-      command => "${tool} channel setaccess ${channel} ${id} callin=on ipmi=on link=on privilege=${priv}",
+      command => "${tool} channel setaccess ${channel} ${id} callin=on ipmi=on link=on privilege=${privilege}",
       unless  => "${tool} channel getaccess ${channel} ${id} | grep '^Privilege Level.*: ${priv_text}$'",
       require => Exec["ipmi_user_add_${title}"],
       notify  => $refresh_execs,

@@ -133,14 +133,14 @@ Enable Status        : disabled
                                                         'username' => 'ADMIN',
                                                         'fixed_name' => true,
                                                         'enabled' => true,
-                                                        'priv' => 4,
+                                                        'privilege' => 4,
                                                     },
                                                     {
                                                         'id' => 3,
                                                         'username' => 'foreman',
                                                         'fixed_name' => false,
                                                         'enabled' => true,
-                                                        'priv' => 2,
+                                                        'privilege' => 2,
                                                     },
                                                 ])
       end
