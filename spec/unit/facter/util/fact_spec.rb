@@ -115,6 +115,7 @@ Enable Status        : disabled
 
       it do
         expect(Facter.value(:ipmi_channel)).to eq(1)
+        expect(Facter.value(:ipmi_max_users)).to eq(10)
         expect(Facter.value(:ipmi_ipaddress)).to eq('192.168.0.37')
         expect(Facter.value(:ipmi_ipaddress_source)).to eq('DHCP Address')
         expect(Facter.value(:ipmi_subnet_mask)).to eq('255.255.255.0')
