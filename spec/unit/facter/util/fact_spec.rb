@@ -11,12 +11,12 @@ describe Facter::Util::Fact do
       before(:each) do
         ipmitool_output = <<-EOS
 Set in Progress         : Set Complete
-Auth Type Support       : NONE MD2 MD5 PASSWORD 
-Auth Type Enable        : Callback : MD2 MD5 PASSWORD 
-                        : User     : MD2 MD5 PASSWORD 
-                        : Operator : MD2 MD5 PASSWORD 
-                        : Admin    : MD2 MD5 PASSWORD 
-                        : OEM      : MD2 MD5 PASSWORD 
+Auth Type Support       : NONE MD2 MD5 PASSWORD
+Auth Type Enable        : Callback : MD2 MD5 PASSWORD
+                        : User     : MD2 MD5 PASSWORD
+                        : Operator : MD2 MD5 PASSWORD
+                        : Admin    : MD2 MD5 PASSWORD
+                        : OEM      : MD2 MD5 PASSWORD
 IP Address Source       : DHCP Address
 IP Address              : 192.168.0.37
 Subnet Mask             : 255.255.255.0

@@ -47,9 +47,9 @@ class ipmi (
     Service[$ipmi::params::ipmi_service_name] -> Ipmi::Snmp <| |>
 
     $foreman_bmc = if $foreman_user and $::foreman_interfaces {
-      if !('ipmi_users' in $facts and 'ipmi_macaddress' in $facts) {
+      if !('ipmi_macaddress' in $facts) {
         warning(
-          "foreman_user set but missing 'ipmi_*' facts, assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user"
+          "foreman_user set but missing 'ipmi_macaddress' fact, assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user"
         )
         ; undef
       } else {
@@ -78,37 +78,59 @@ class ipmi (
     } else {
       undef
     }
-    $foreman_user_params = if $foreman_bmc {
-      $existing_user = $facts['ipmi_users'].filter |$user| {
-        $user['username'] == $foreman_bmc['username']
-      }[0]
-      $id = if $existing_user {
-        $existing_user['id']
-      } else {
-        $existing_ids = $facts['ipmi_users'].map |$user| { $user['id'] }
-        $passed_ids = $users.map | $user | { $user['id'] }
-        $all_ids = Integer[1, $facts['ipmi_max_users']].map |$i| { $i }
-        $available_ids = $all_ids - $existing_ids - $passed_ids
-        if empty($available_ids) {
-          fail("Max users is ${$facts['ipmi_max_users']} and all ids are taken")
-        }
-        $available_ids[0]
-      }
-      ; {
-        id        => $id,
+    $foreman_users = if $foreman_bmc {
+      [{
         username  => $foreman_bmc['username'],
+        password  => $foreman_bmc['password'],
         privilege => $foreman_user_privilege,
-        password  => $foreman_bmc['password']
-      }
+      }]
     } else {
-      undef
+      []
     }
 
-    $users_wanted = if $foreman_user_params {
-      $users << $foreman_user_params
-    } else {
-      $users
+    $users_existing_ids_applied = ($users + $foreman_users).map |$user| {
+      if $user['id'] or !('ipmi_users' in $facts) {
+        $user
+      } else {
+        $existing_user = $facts['ipmi_users'].filter |$existing_user| {
+          $user['username'] == $existing_user['username']
+        }[0]
+        if $existing_user {
+          $user + { id => $existing_user['id'] }
+        } else {
+          $user
+        }
+      }
     }
+
+    $users_with_id = $users_existing_ids_applied.filter |$user| { 'id' in $user }
+    $users_without_id = $users_existing_ids_applied.filter |$user| { !('id' in $user) }
+
+    $users_allocated_new_ids = if 'ipmi_users' in $facts and 'ipmi_max_users' in $facts {
+      $existing_ids = $facts['ipmi_users'].map |$user| { $user['id'] }
+      $passed_ids = $users.map | $user | { $user['id'] }
+      $all_possible_ids = Integer[1, $facts['ipmi_max_users']].map |$i| { $i }
+      $available_ids = $all_possible_ids - $existing_ids - $passed_ids
+      $users_without_id.map |$i, $user| {
+        if $user[ensure] in [absent, disabled] {
+          fail("Can't have user ensure => ${$user[ensure]} when no id specified")
+        }
+        $id = $available_ids[$i]
+        if !$id {
+          fail("Max users is ${$facts['ipmi_max_users']} and all ids are taken")
+        }
+        $user + { id => $id }
+      }
+    } else {
+      if !empty($users_without_id) {
+        warning(
+          "users without ids but missing 'ipmi_*' facts, assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user"
+        )
+      }
+      ; []
+    }
+
+    $users_wanted = $users_with_id + $users_allocated_new_ids
 
     $users_remove = if $purge_users {
       if !('ipmi_users' in $facts) {
@@ -132,12 +154,8 @@ class ipmi (
     }
 
     $users_hash = Hash(($users_wanted + $users_remove).map |$user| {
-      $user_title = if $user == $foreman_user_params {
-        'foreman_user'
-      } else {
-        "id_${$user['id']}"
-      }
-      [$user_title, $user + { channel => $channel }]
+      $id = $user['id']
+      ["id_${id}", $user + { channel => $channel }]
     })
 
     create_resources('ipmi::user',

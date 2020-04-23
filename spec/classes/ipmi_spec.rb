@@ -96,16 +96,35 @@ describe 'ipmi', type: :class do
 
   describe 'users' do
     let :facts do
-      {osfamily: 'Debian'}
+      {
+          osfamily: 'Debian',
+          ipmi_macaddress: 'ac:1f:6b:7f:d4:ce',
+          ipmi_max_users: 10,
+          ipmi_users: [
+              {
+                  'id' => 1,
+                  'username' => '',
+                  'fixed_name' => true,
+                  'enabled' => false,
+              },
+              {
+                  'id' => 2,
+                  'username' => 'ADMIN',
+                  'fixed_name' => true,
+                  'enabled' => true,
+                  'priv' => 4,
+              },
+          ],
+      }
     end
 
-    describe 'users => {...}' do
+    describe 'with ids specified' do
       let(:params) do
         {
             'users' => [
                 {'id' => 2, 'username' => 'ADMIN', 'password' => 'secret'},
                 {'id' => 3, 'username' => 'other', 'privilege' => 1},
-            ]
+            ],
         }
       end
 
@@ -118,6 +137,135 @@ describe 'ipmi', type: :class do
                                                        username: 'other',
                                                        privilege: 1,
                                                        channel: 1)
+      end
+    end
+
+    describe 'use id from existing user matching name' do
+      let(:params) do
+        {
+            'users' => [
+                {'username' => 'ADMIN', 'password' => 'secret'},
+            ],
+        }
+      end
+
+      it do
+        is_expected.to contain_ipmi__user('id_2').with(id: 2,
+                                                       username: 'ADMIN',
+                                                       password: 'secret',
+                                                       channel: 1)
+      end
+    end
+
+    describe 'noop user when no ipmi_* facts' do
+      let :facts do
+        {
+            osfamily: 'Debian',
+        }
+      end
+      let(:params) do
+        {
+            'users' => [
+                {'username' => 'ADMIN', 'password' => 'secret'},
+                {'id' => 3, 'username' => 'other', 'privilege' => 1},
+            ],
+        }
+      end
+
+      it do
+        is_expected.to contain_ipmi__user('id_3')
+        is_expected.to have_ipmi__user_resource_count(1)
+      end
+    end
+
+    describe 'allocate new ids when no names match' do
+      let(:params) do
+        {
+            'users' => [
+                {'username' => 'other1', 'password' => 'secret1'},
+                {'username' => 'other2', 'password' => 'secret2'},
+            ],
+        }
+      end
+
+      it do
+        is_expected.to contain_ipmi__user('id_3').with(id: 3,
+                                                       username: 'other1',
+                                                       password: 'secret1',
+                                                       channel: 1)
+        is_expected.to contain_ipmi__user('id_4').with(id: 4,
+                                                       username: 'other2',
+                                                       password: 'secret2',
+                                                       channel: 1)
+      end
+    end
+
+    describe 'fail when need to generate id but ensure => absent' do
+      let(:params) do
+        {
+            'users' => [
+                {'username' => 'other', 'password' => 'secret', 'ensure' => 'absent'},
+            ],
+        }
+      end
+
+      it do
+        is_expected.to compile.and_raise_error(%r{Can't have user ensure => absent when no id specified})
+      end
+    end
+
+    describe 'fail when no more ids available' do
+      let(:facts) do
+        super().merge(ipmi_max_users: 2)
+      end
+      let(:params) do
+        {
+            'users' => [
+                {'username' => 'other', 'password' => 'secret'},
+            ],
+        }
+      end
+
+      it do
+        is_expected.to compile.and_raise_error(%r{Max users is 2 and all ids are taken})
+      end
+    end
+
+    describe 'allocating new id user chooses id within gap in existing users' do
+      let :facts do
+        super().merge(ipmi_users: [
+            {
+                'id' => 1,
+                'username' => '',
+                'fixed_name' => true,
+                'enabled' => false,
+            },
+            {
+                'id' => 2,
+                'username' => 'ADMIN',
+                'fixed_name' => true,
+                'enabled' => true,
+                'priv' => 4,
+            },
+            {
+                'id' => 4,
+                'username' => 'other',
+                'fixed_name' => false,
+                'enabled' => true,
+                'priv' => 4,
+            },
+        ])
+      end
+      let(:params) do
+        {
+            'users' => [
+                {'username' => 'newuser', 'password' => 'secret'},
+            ],
+        }
+      end
+
+      it do
+        is_expected.to contain_ipmi__user('id_3').with(username: 'newuser')
       end
     end
   end
@@ -133,14 +281,14 @@ describe 'ipmi', type: :class do
                   'id' => 1,
                   'username' => '',
                   'fixed_name' => true,
-                  'enabled' => false
+                  'enabled' => false,
               },
               {
                   'id' => 2,
                   'username' => 'ADMIN',
                   'fixed_name' => true,
                   'enabled' => true,
-                  'priv' => 4
+                  'priv' => 4,
               },
           ],
       }
@@ -150,30 +298,31 @@ describe 'ipmi', type: :class do
           'foreman_interfaces' => [
               {
                   'mac' => 'ac:1f:6b:7f:d5:16',
-                  'type' => 'Interface'
+                  'type' => 'Interface',
               },
               {
                   'mac' => 'ac:1f:6b:7f:d5:17',
-                  'type' => 'Interface'
+                  'type' => 'Interface',
               },
               {
                   'mac' => 'ac:1f:6b:7f:d4:ce',
                   'type' => 'BMC',
                   'username' => 'ADMIN',
-                  'password' => 'SECRET'
-              }
-          ]
+                  'password' => 'SECRET',
+              },
+          ],
       }
     end
 
     describe 'matching existing BMC user' do
       let(:params) { {'foreman_user' => true} }
+
       it do
-        is_expected.to contain_ipmi__user('foreman_user').with(id: 2,
-                                                               username: 'ADMIN',
-                                                               password: 'SECRET',
-                                                               privilege: 4,
-                                                               channel: 1)
+        is_expected.to contain_ipmi__user('id_2').with(id: 2,
+                                                       username: 'ADMIN',
+                                                       password: 'SECRET',
+                                                       privilege: 4,
+                                                       channel: 1)
       end
     end
 
@@ -184,120 +333,39 @@ describe 'ipmi', type: :class do
             'foreman_user_privilege' => 3,
         }
       end
+
       it do
-        is_expected.to contain_ipmi__user('foreman_user').with(privilege: 3)
+        is_expected.to contain_ipmi__user('id_2').with(privilege: 3)
       end
     end
 
     describe 'adding new Foreman user' do
       let :facts do
-        super().merge({
-                          ipmi_users: [
-                              {
-                                  'id' => 1,
-                                  'username' => '',
-                                  'fixed_name' => true,
-                                  'enabled' => false
-                              },
-                              {
-                                  'id' => 2,
-                                  'username' => 'root',
-                                  'fixed_name' => true,
-                                  'enabled' => true,
-                                  'priv' => 4
-                              },
-                          ]
-                      })
+        super().merge(ipmi_users: [
+            {
+                'id' => 1,
+                'username' => '',
+                'fixed_name' => true,
+                'enabled' => false,
+            },
+            {
+                'id' => 2,
+                'username' => 'root',
+                'fixed_name' => true,
+                'enabled' => true,
+                'priv' => 4,
+            },
+        ])
       end
       let(:params) { {'foreman_user' => true} }
-      it do
-        is_expected.to contain_ipmi__user('foreman_user').with(id: 3,
-                                                               username: 'ADMIN',
-                                                               password: 'SECRET',
-                                                               privilege: 4,
-                                                               channel: 1)
-        is_expected.to have_ipmi__user_resource_count(1)
-      end
-    end
 
-    describe 'adding new Foreman user chooses id within gap in existing users' do
-      let :facts do
-        super().merge({
-                          ipmi_users: [
-                              {
-                                  'id' => 1,
-                                  'username' => '',
-                                  'fixed_name' => true,
-                                  'enabled' => false
-                              },
-                              {
-                                  'id' => 2,
-                                  'username' => 'root',
-                                  'fixed_name' => true,
-                                  'enabled' => true,
-                                  'priv' => 4
-                              },
-                              {
-                                  'id' => 4,
-                                  'username' => 'other',
-                                  'fixed_name' => false,
-                                  'enabled' => true,
-                                  'priv' => 4
-                              },
-                          ],
-                      })
-      end
-      let(:params) { {'foreman_user' => true} }
       it do
-        is_expected.to contain_ipmi__user('foreman_user').with(id: 3)
-      end
-    end
-
-    describe 'adding new Foreman user chooses id that avoids passed users' do
-      let :facts do
-        super().merge({
-                          ipmi_users: [
-                              {
-                                  'id' => 1,
-                                  'username' => '',
-                                  'fixed_name' => true,
-                                  'enabled' => false
-                              },
-                              {
-                                  'id' => 2,
-                                  'username' => 'root',
-                                  'fixed_name' => true,
-                                  'enabled' => true,
-                                  'priv' => 4
-                              },
-                              {
-                                  'id' => 4,
-                                  'username' => 'other',
-                                  'fixed_name' => false,
-                                  'enabled' => true,
-                                  'priv' => 4
-                              },
-                          ],
-                      })
-      end
-      let(:params) do
-        {
-            'foreman_user' => true,
-            'users' => [
-                {
-                    'id' => 3,
-                    'username' => 'other',
-                    'password' => 'SSSSHH',
-                }
-            ],
-        }
-      end
-      it do
-        is_expected.to contain_ipmi__user('foreman_user').with(id: 5)
         is_expected.to contain_ipmi__user('id_3').with(id: 3,
-                                                       username: 'other',
-                                                       password: 'SSSSHH')
-        is_expected.to have_ipmi__user_resource_count(2)
+                                                       username: 'ADMIN',
+                                                       password: 'SECRET',
+                                                       privilege: 4,
+                                                       channel: 1)
+        is_expected.to have_ipmi__user_resource_count(1)
       end
     end
 
@@ -306,8 +374,9 @@ describe 'ipmi', type: :class do
         {}
       end
       let(:params) { {'foreman_user' => true} }
+
       it do
-        is_expected.to compile.and_raise_error(/Unknown variable: '::foreman_interfaces'/)
+        is_expected.to compile.and_raise_error(%r{Unknown variable: '::foreman_interfaces'})
       end
     end
 
@@ -317,12 +386,13 @@ describe 'ipmi', type: :class do
             'foreman_interfaces' => [
                 {
                     'mac' => 'ac:1f:6b:7f:d5:16',
-                    'type' => 'Interface'
+                    'type' => 'Interface',
                 },
-            ]
+            ],
         }
       end
       let(:params) { {'foreman_user' => 'optional'} }
+
       it do
         is_expected.to have_ipmi__user_resource_count(0)
       end
@@ -334,24 +404,24 @@ describe 'ipmi', type: :class do
             'foreman_interfaces' => [
                 {
                     'mac' => 'ac:1f:6b:7f:d5:16',
-                    'type' => 'Interface'
+                    'type' => 'Interface',
                 },
-            ]
+            ],
         }
       end
       let(:params) { {'foreman_user' => true} }
+
       it do
-        is_expected.to compile.and_raise_error(/No BMC interface/)
+        is_expected.to compile.and_raise_error(%r{No BMC interface})
       end
     end
 
     describe 'noop when optional and no BMC interface matches macaddress' do
       let :facts do
-        super().merge({
-                          'ipmi_macaddress' => 'totally-different',
-                      })
+        super().merge('ipmi_macaddress' => 'totally-different')
       end
       let(:params) { {'foreman_user' => 'optional'} }
+
       it do
         is_expected.to have_ipmi__user_resource_count(0)
       end
@@ -359,13 +429,12 @@ describe 'ipmi', type: :class do
 
     describe 'fail when true and no BMC interface in Foreman' do
       let :facts do
-        super().merge({
-                          'ipmi_macaddress' => 'totally-different',
-                      })
+        super().merge('ipmi_macaddress' => 'totally-different')
       end
       let(:params) { {'foreman_user' => true} }
+
       it do
-        is_expected.to compile.and_raise_error(/No BMC interface/)
+        is_expected.to compile.and_raise_error(%r{No BMC interface})
       end
     end
 
@@ -377,12 +446,13 @@ describe 'ipmi', type: :class do
                     'mac' => 'ac:1f:6b:7f:d4:ce',
                     'type' => 'BMC',
                     'username' => '',
-                    'password' => ''
-                }
-            ]
+                    'password' => '',
+                },
+            ],
         }
       end
       let(:params) { {'foreman_user' => 'optional'} }
+
       it do
         is_expected.to have_ipmi__user_resource_count(0)
       end
@@ -396,14 +466,15 @@ describe 'ipmi', type: :class do
                     'mac' => 'ac:1f:6b:7f:d4:ce',
                     'type' => 'BMC',
                     'username' => '',
-                    'password' => ''
-                }
-            ]
+                    'password' => '',
+                },
+            ],
         }
       end
       let(:params) { {'foreman_user' => true} }
+
       it do
-        is_expected.to compile.and_raise_error(/No username on BMC interface/)
+        is_expected.to compile.and_raise_error(%r{No username on BMC interface})
       end
     end
 
@@ -415,12 +486,13 @@ describe 'ipmi', type: :class do
                     'mac' => 'ac:1f:6b:7f:d4:ce',
                     'type' => 'BMC',
                     'username' => 'ADMIN',
-                    'password' => ''
-                }
-            ]
+                    'password' => '',
+                },
+            ],
         }
       end
       let(:params) { {'foreman_user' => 'optional'} }
+
       it do
         is_expected.to have_ipmi__user_resource_count(0)
       end
@@ -434,14 +506,15 @@ describe 'ipmi', type: :class do
                     'mac' => 'ac:1f:6b:7f:d4:ce',
                     'type' => 'BMC',
                     'username' => 'ADMIN',
-                    'password' => ''
-                }
-            ]
+                    'password' => '',
+                },
+            ],
         }
       end
       let(:params) { {'foreman_user' => true} }
+
       it do
-        is_expected.to compile.and_raise_error(/No password on BMC interface/)
+        is_expected.to compile.and_raise_error(%r{No password on BMC interface})
       end
     end
 
@@ -450,6 +523,7 @@ describe 'ipmi', type: :class do
         {'osfamily' => 'Debian'}
       end
       let(:params) { {'foreman_user' => true} }
+
       it do
         is_expected.to have_ipmi__user_resource_count(0)
       end
@@ -461,33 +535,34 @@ describe 'ipmi', type: :class do
       {
           osfamily: 'Debian',
           ipmi_macaddress: 'ac:1f:6b:7f:d4:ce',
+          ipmi_max_users: 10,
           ipmi_users: [
               {
                   'id' => 1,
                   'username' => '',
                   'fixed_name' => true,
-                  'enabled' => false
+                  'enabled' => false,
               },
               {
                   'id' => 2,
                   'username' => 'ADMIN',
                   'fixed_name' => true,
                   'enabled' => true,
-                  'priv' => 4
+                  'priv' => 4,
               },
               {
                   'id' => 3,
                   'username' => 'foreman',
                   'fixed_name' => false,
                   'enabled' => true,
-                  'priv' => 4
+                  'priv' => 4,
               },
               {
                   'id' => 4,
                   'username' => 'old',
                   'fixed_name' => false,
                   'enabled' => false,
-                  'priv' => 4
+                  'priv' => 4,
               },
           ],
       }
@@ -497,6 +572,7 @@ describe 'ipmi', type: :class do
       let(:params) do
         {'purge_users' => true}
       end
+
       it do
         is_expected.to contain_ipmi__user('id_2').with(id: 2, ensure: 'absent')
         is_expected.to contain_ipmi__user('id_3').with(id: 3, ensure: 'absent')
@@ -513,10 +589,11 @@ describe 'ipmi', type: :class do
                     'id' => 3,
                     'username' => 'other',
                     'password' => 'SSSSHH',
-                }
+                },
             ],
         }
       end
+
       it do
         is_expected.to contain_ipmi__user('id_2').with(id: 2, ensure: 'absent')
         is_expected.to contain_ipmi__user('id_3')
@@ -532,9 +609,9 @@ describe 'ipmi', type: :class do
                     'mac' => 'ac:1f:6b:7f:d4:ce',
                     'type' => 'BMC',
                     'username' => 'ADMIN',
-                    'password' => 'SECRET'
-                }
-            ]
+                    'password' => 'SECRET',
+                },
+            ],
         }
       end
       let(:params) do
@@ -546,12 +623,13 @@ describe 'ipmi', type: :class do
                     'id' => 3,
                     'username' => 'other',
                     'password' => 'SSSSHH',
-                }
+                },
             ],
         }
       end
+
       it do
-        is_expected.to contain_ipmi__user('foreman_user').with(id: 2, password: 'SECRET')
+        is_expected.to contain_ipmi__user('id_2').with(username: 'ADMIN')
         is_expected.to contain_ipmi__user('id_3')
         is_expected.to have_ipmi__user_resource_count(2)
       end
@@ -564,6 +642,7 @@ describe 'ipmi', type: :class do
       let(:params) do
         {'purge_users' => true}
       end
+
       it do
         is_expected.to have_ipmi__user_resource_count(0)
       end
@@ -580,6 +659,7 @@ describe 'ipmi', type: :class do
     let(:params) do
       {'snmp' => 'public'}
     end
+
     it do
       is_expected.to contain_ipmi__snmp('init').with(snmp: 'public', channel: 1)
     end
@@ -596,9 +676,10 @@ describe 'ipmi', type: :class do
       {
           'network' => {
               'type' => 'dhcp',
-          }
+          },
       }
     end
+
     it do
       is_expected.to contain_ipmi__network('init').with(type: 'dhcp', channel: 1)
     end

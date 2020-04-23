@@ -33,11 +33,11 @@ Manage IPMI users:
 class { ipmi:
     purge_users => true,
     foreman_user => true,
-    users => {
-        'ADMIN' => {
-            id => 2,
+    users => [
+        {
+            username => 'ADMIN',
             password => 'secret',            
         }, 
-    },    
+    ],    
 }
 ```
