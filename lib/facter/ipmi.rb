@@ -39,6 +39,8 @@ def load_user_facts
   max_id = max_users
   return unless max_id && max_id > 0
 
+  add_ipmi_fact 'max_users', max_id
+
   (1..max_id).to_a.each do |id|
     username = '' # Anonymous users exist
     privilege = nil

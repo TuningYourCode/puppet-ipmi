@@ -3,7 +3,11 @@
 # This class should be considered private.
 #
 class ipmi::params {
-  $channel = $facts['ipmi_channel']
+  $channel = if 'ipmi_channel' in $facts {
+    $facts['ipmi_channel']
+  } else {
+    1
+  }
   case $::osfamily {
     'redhat': {
       case $::operatingsystemmajrelease {

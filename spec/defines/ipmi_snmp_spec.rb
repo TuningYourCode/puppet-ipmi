@@ -6,7 +6,6 @@ describe 'ipmi::snmp', type: :define do
       operatingsystem: 'Ubuntu',
       osfamily: 'debian',
       operatingsystemmajrelease: '18.04',
-      ipmi_channel: 1,
     }
   end
 
@@ -20,9 +19,10 @@ describe 'ipmi::snmp', type: :define do
     let(:params) do
       {
         snmp: 'secret',
+        channel: 2,
       }
     end
 
-    it { is_expected.to contain_exec('ipmi_set_snmp_1') }
+    it { is_expected.to contain_exec('ipmi_set_snmp_2') }
   end
 end

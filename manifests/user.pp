@@ -6,8 +6,8 @@ define ipmi::user (
   String $username                                 = $title,
   Optional[String] $password                       = undef,
   Integer[1, 4] $privilege                         = 4,
+  Integer[1] $channel                              = 1,
 ) {
-  include ipmi::params
 
   $priv_text = case $privilege {
     1: { 'CALLBACK' }
@@ -17,7 +17,6 @@ define ipmi::user (
     default: { fail('invalid privilege level specified') }
   }
 
-  $channel = $ipmi::params::channel
   $tool = '/usr/bin/ipmitool'
 
   if $ensure == present {

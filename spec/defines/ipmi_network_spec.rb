@@ -6,7 +6,6 @@ describe 'ipmi::network', type: :define do
       operatingsystem: 'Ubuntu',
       osfamily: 'debian',
       operatingsystemmajrelease: '18.04',
-      ipmi_channel: 1,
     }
   end
 
@@ -29,18 +28,17 @@ describe 'ipmi::network', type: :define do
         netmask: '255.255.255.0',
         gateway: '2.2.2.2',
         type: 'dhcp',
+        channel: 2,
       }
     end
 
-    it { is_expected.to contain_exec('ipmi_set_dhcp_1') }
+    it { is_expected.to contain_exec('ipmi_set_dhcp_2') }
   end
 
   describe 'when deploying as static with minimal params' do
     let(:params) do
       {
         ip: '1.1.1.10',
-        netmask: '255.255.255.0',
-        gateway: '1.1.1.1',
         type: 'static',
       }
     end
@@ -57,11 +55,12 @@ describe 'ipmi::network', type: :define do
         netmask: '255.255.255.0',
         gateway: '1.1.1.1',
         type: 'static',
+        channel: 2,
       }
     end
 
-    it { is_expected.to contain_exec('ipmi_set_static_1').that_notifies('Exec[ipmi_set_ipaddr_1]') }
-    it { is_expected.to contain_exec('ipmi_set_static_1').that_notifies('Exec[ipmi_set_defgw_1]') }
-    it { is_expected.to contain_exec('ipmi_set_static_1').that_notifies('Exec[ipmi_set_netmask_1]') }
+    it { is_expected.to contain_exec('ipmi_set_static_2').that_notifies('Exec[ipmi_set_ipaddr_2]') }
+    it { is_expected.to contain_exec('ipmi_set_static_2').that_notifies('Exec[ipmi_set_defgw_2]') }
+    it { is_expected.to contain_exec('ipmi_set_static_2').that_notifies('Exec[ipmi_set_netmask_2]') }
   end
 end

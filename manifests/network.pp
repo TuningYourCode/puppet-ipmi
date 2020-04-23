@@ -4,22 +4,19 @@ define ipmi::network (
   Stdlib::IP::Address::V4::Nosubnet $ip      = '0.0.0.0',
   Stdlib::IP::Address::V4::Nosubnet $netmask = '255.255.255.0',
   Stdlib::IP::Address::V4::Nosubnet $gateway = '0.0.0.0',
-  Enum['dhcp', 'static'] $type               = 'dhcp',
+  Enum[dhcp, static] $type                   = dhcp,
+  Integer[1] $channel                        = 1,
 ) {
-  include ipmi::params
 
-  $channel = $ipmi::params::channel
-
-  if $type == 'dhcp' {
+  if $type == dhcp {
 
     exec { "ipmi_set_dhcp_${channel}":
       command => "/usr/bin/ipmitool lan set ${channel} ipsrc dhcp",
       onlyif  => "/usr/bin/test $(ipmitool lan print ${channel} | grep 'IP \
 Address Source' | cut -f 2 -d : | grep -c DHCP) -eq 0",
     }
-  }
 
-  else {
+  } else {
 
     exec { "ipmi_set_static_${channel}":
       command => "/usr/bin/ipmitool lan set ${channel} ipsrc static",
