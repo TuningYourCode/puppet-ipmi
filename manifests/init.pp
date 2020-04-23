@@ -53,39 +53,53 @@ class ipmi (
     } else {
       undef
     }
-    $users_foreman = if $foreman_bmc and 'ipmi_users' in $facts {
-      $existing_user = $facts['ipmi_users'].filter |$user| {
-        $user['username'] == $foreman_bmc['username']
-      }[0]
-      $id = if $existing_user {
-        $existing_user['id']
+    $users_foreman = if $foreman_bmc {
+      if !('ipmi_users' in $facts) {
+        warning(
+          "foreman_user set but no 'ipmi_users' fact, assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user"
+        )
+        ; {}
       } else {
-        $facts['ipmi_users'].map |$user| { $user['id'] }.max + 1
+        $existing_user = $facts['ipmi_users'].filter |$user| {
+          $user['username'] == $foreman_bmc['username']
+        }[0]
+        $id = if $existing_user {
+          $existing_user['id']
+        } else {
+          $facts['ipmi_users'].map |$user| { $user['id'] }.max + 1
+        }
+        $base_hash = {
+          id        => $id,
+          privilege => $foreman_user_privilege,
+        }
+        $password_hash = if !empty($foreman_bmc['password']) {
+          { password => $foreman_bmc['password'] }
+        } else {
+          {}
+        }
+        Hash([$foreman_bmc['username'], $base_hash + $password_hash])
       }
-      $base_hash = {
-        id        => $id,
-        privilege => $foreman_user_privilege,
-      }
-      $password_hash = if !empty($foreman_bmc['password']) {
-        { password => $foreman_bmc['password'] }
-      } else {
-        {}
-      }
-      Hash([$foreman_bmc['username'], $base_hash + $password_hash])
     } else {
       {}
     }
 
     $users_present = $users + $users_foreman
 
-    $users_absent = if $purge_users and 'ipmi_users' in $facts {
-      $present_ids = $users_present.map |$name, $params| { $params['id'] }
-      $enabled_ids = $facts['ipmi_users'].filter |$user| { $user['enabled'] }.map |$user| { $user['id'] }
-      $extraneous_ids = $enabled_ids - $present_ids
-      Hash($extraneous_ids.map |$id| { ["id_${id}", {
-        id     => $id,
-        ensure => absent,
-      }] })
+    $users_absent = if $purge_users {
+      if !('ipmi_users' in $facts) {
+        warning(
+          "purge_users set but no 'ipmi_users' fact, assuming this is first run and wasn't installed before facts gneerated, not purging"
+        )
+        ; {}
+      } else {
+        $present_ids = $users_present.map |$name, $params| { $params['id'] }
+        $enabled_ids = $facts['ipmi_users'].filter |$user| { $user['enabled'] }.map |$user| { $user['id'] }
+        $extraneous_ids = $enabled_ids - $present_ids
+        Hash($extraneous_ids.map |$id| { ["id_${id}", {
+          id     => $id,
+          ensure => absent,
+        }] })
+      }
     } else {
       {}
     }
