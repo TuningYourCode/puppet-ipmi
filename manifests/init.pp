@@ -46,11 +46,15 @@ class ipmi (
     Service[$ipmi::params::ipmi_service_name] -> Ipmi::Network <| |>
     Service[$ipmi::params::ipmi_service_name] -> Ipmi::Snmp <| |>
 
-    $foreman_bmc = if $foreman_user and $::foreman_interfaces {
+    $foreman_bmc = if $foreman_user {
+      if !$::foreman_interfaces {
+        fail("foreman_user set but 'foreman_interfaces' not passed from Foreman ENC")
+      }
       if !('ipmi_macaddress' in $facts) {
-        warning(
-          "foreman_user set but missing 'ipmi_macaddress' fact, assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user"
-        )
+        warning(join([
+          "foreman_user set but missing 'ipmi_macaddress' fact, ",
+          "assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user",
+        ]))
         ; undef
       } else {
         $foreman_bmcs = $::foreman_interfaces.filter |$interface| {
@@ -123,9 +127,10 @@ class ipmi (
       }
     } else {
       if !empty($users_without_id) {
-        warning(
-          "users without ids but missing 'ipmi_*' facts, assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user"
-        )
+        warning(join([
+          "users without ids but missing 'ipmi_*' facts,",
+          "assuming this is first run and wasn't installed before facts gneerated, not adding Foreman user",
+        ]))
       }
       ; []
     }
@@ -134,9 +139,10 @@ class ipmi (
 
     $users_remove = if $purge_users {
       if !('ipmi_users' in $facts) {
-        warning(
-          "purge_users set but no 'ipmi_users' fact, assuming this is first run and wasn't installed before facts gneerated, not purging"
-        )
+        warning(join([
+          "purge_users set but no 'ipmi_users' fact, ",
+          "assuming this is first run and wasn't installed before facts gneerated, not purging",
+        ]))
         ; []
       } else {
         $present_ids = $users_wanted.map |$params| { $params['id'] }

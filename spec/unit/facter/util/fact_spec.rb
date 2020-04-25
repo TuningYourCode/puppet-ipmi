@@ -111,7 +111,7 @@ Enable Status        : disabled
         end
         Facter.fact(:kernel).stubs(:value).returns('Linux')
       end
-      let(:facts) { {kernel: 'Linux'} }
+      let(:facts) { { kernel: 'Linux' } }
 
       it do
         expect(Facter.value(:ipmi_channel)).to eq(1)
@@ -123,26 +123,26 @@ Enable Status        : disabled
         expect(Facter.value(:ipmi_gateway)).to eq('192.168.0.1')
         # noinspection RubyStringKeysInHashInspection
         expect(Facter.value(:ipmi_users)).to eq([
-                                                    {
-                                                        'id' => 1,
-                                                        'username' => '',
-                                                        'fixed_name' => true,
-                                                        'enabled' => false,
-                                                    },
-                                                    {
-                                                        'id' => 2,
-                                                        'username' => 'ADMIN',
-                                                        'fixed_name' => true,
-                                                        'enabled' => true,
-                                                        'privilege' => 4,
-                                                    },
-                                                    {
-                                                        'id' => 3,
-                                                        'username' => 'foreman',
-                                                        'fixed_name' => false,
-                                                        'enabled' => true,
-                                                        'privilege' => 2,
-                                                    },
+                                                  {
+                                                    'id' => 1,
+                                                    'username' => '',
+                                                    'fixed_name' => true,
+                                                    'enabled' => false,
+                                                  },
+                                                  {
+                                                    'id' => 2,
+                                                    'username' => 'ADMIN',
+                                                    'fixed_name' => true,
+                                                    'enabled' => true,
+                                                    'privilege' => 4,
+                                                  },
+                                                  {
+                                                    'id' => 3,
+                                                    'username' => 'foreman',
+                                                    'fixed_name' => false,
+                                                    'enabled' => true,
+                                                    'privilege' => 2,
+                                                  },
                                                 ])
       end
     end
@@ -152,7 +152,7 @@ Enable Status        : disabled
         Facter::Core::Execution.expects(:which).at_least(1).with('ipmitool').returns(false)
         Facter.fact(:kernel).stubs(:value).returns('Linux')
       end
-      let(:facts) { {kernel: 'Linux'} }
+      let(:facts) { { kernel: 'Linux' } }
 
       it do
         expect(Facter.value(:ipmi_channel)).to eq(1)
