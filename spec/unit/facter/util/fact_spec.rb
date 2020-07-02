@@ -100,6 +100,7 @@ IPMI Messaging       : disabled
 Privilege Level      : Unknown (0x00)
 Enable Status        : disabled
         EOS
+        Facter.add(:kernel) { setcode { 'Linux' } }
         Facter::Core::Execution.expects(:which).at_least(1).with('ipmitool').returns('/usr/bin/ipmitool')
         Facter::Core::Execution.expects(:execute).at_least(1).with('ipmitool lan print 1 2>&1').returns(ipmitool_output)
         Facter::Core::Execution.expects(:execute).at_least(1).with('ipmitool user summary 2>&1').returns(summary_output)
@@ -109,9 +110,7 @@ Enable Status        : disabled
         (4..10).to_a.each do |mock_user_id|
           Facter::Core::Execution.expects(:execute).at_least(1).with("ipmitool channel getaccess 1 #{mock_user_id} 2>&1").returns(empty_user_output)
         end
-        Facter.fact(:kernel).stubs(:value).returns('Linux')
       end
-      let(:facts) { { kernel: 'Linux' } }
 
       it do
         expect(Facter.value(:ipmi_channel)).to eq(1)
@@ -149,10 +148,9 @@ Enable Status        : disabled
 
     context 'returns only channel when ipmitool not present' do
       before(:each) do
+        Facter.add(:kernel) { setcode { 'Linux' } }
         Facter::Core::Execution.expects(:which).at_least(1).with('ipmitool').returns(false)
-        Facter.fact(:kernel).stubs(:value).returns('Linux')
       end
-      let(:facts) { { kernel: 'Linux' } }
 
       it do
         expect(Facter.value(:ipmi_channel)).to eq(1)
