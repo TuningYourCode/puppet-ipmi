@@ -2,6 +2,11 @@
 
 All notable changes after forking will be documented in this file.
 
+## Release 4.1.0
+
+**Features**
+- Use `ensure_packages` to avoid package conflicts
+
 ## Release 4.0.0
 
 **Features**

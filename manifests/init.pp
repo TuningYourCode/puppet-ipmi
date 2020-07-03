@@ -22,9 +22,9 @@ class ipmi (
     $watchdog_str = if $watchdog { 'yes' } else { 'no' }
     $channel = $ipmi::params::channel
 
-    package { $ipmi::params::ipmi_package:
-      ensure => present,
-    }
+    ensure_packages($ipmi::params::ipmi_package)
+
+    Package[$ipmi::params::ipmi_package]
     ~> augeas { $ipmi::params::config_location:
       context => "/files${ipmi::params::config_location}",
       changes => "set IPMI_WATCHDOG ${watchdog_str}",
@@ -32,13 +32,11 @@ class ipmi (
     ~> service { $ipmi::params::ipmi_service_name:
       ensure     => running,
       enable     => true,
-      hasstatus  => true,
       hasrestart => true,
     }
     ~> service { 'ipmievd':
       ensure     => $ipmievd_service_ensure,
       enable     => $ipmievd_service_ensure == running,
-      hasstatus  => true,
       hasrestart => true,
     }
 
@@ -184,9 +182,9 @@ class ipmi (
 
   } else {
 
-    package { $ipmi::params::ipmi_package:
+    ensure_packages($ipmi::params::ipmi_package, {
       ensure => absent,
-    }
+    })
 
   }
 
