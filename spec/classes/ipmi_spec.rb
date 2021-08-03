@@ -4,7 +4,7 @@ describe 'ipmi', type: :class do
   describe 'for osfamily RedHat' do
     let :facts do
       {
-        osfamily:                  'RedHat',
+        osfamily: 'RedHat',
         operatingsystemmajrelease: '6',
       }
     end
@@ -97,24 +97,24 @@ describe 'ipmi', type: :class do
   describe 'users' do
     let :facts do
       {
-        osfamily:        'Debian',
+        osfamily: 'Debian',
         ipmi_macaddress: 'ac:1f:6b:7f:d4:ce',
-        ipmi_max_users:  10,
-        ipmi_users:      [
-                           {
-                             'id'         => 1,
-                             'username'   => '',
-                             'fixed_name' => true,
-                             'enabled'    => false,
-                           },
-                           {
-                             'id'         => 2,
-                             'username'   => 'ADMIN',
-                             'fixed_name' => true,
-                             'enabled'    => true,
-                             'priv'       => 4,
-                           },
-                         ],
+        ipmi_max_users: 10,
+        ipmi_users: [
+          {
+            'id' => 1,
+            'username' => '',
+            'fixed_name' => true,
+            'enabled' => false,
+          },
+          {
+            'id' => 2,
+            'username' => 'ADMIN',
+            'fixed_name' => true,
+            'enabled' => true,
+            'priv' => 4,
+          },
+        ],
       }
     end
 
@@ -129,14 +129,14 @@ describe 'ipmi', type: :class do
       end
 
       it do
-        is_expected.to contain_ipmi__user('id_2').with(id:       2,
+        is_expected.to contain_ipmi__user('id_2').with(id: 2,
                                                        username: 'ADMIN',
                                                        password: 'secret',
-                                                       channel:  1)
-        is_expected.to contain_ipmi__user('id_3').with(id:        3,
-                                                       username:  'other',
+                                                       channel: 1)
+        is_expected.to contain_ipmi__user('id_3').with(id: 3,
+                                                       username: 'other',
                                                        privilege: 1,
-                                                       channel:   1)
+                                                       channel: 1)
       end
     end
 
@@ -150,10 +150,10 @@ describe 'ipmi', type: :class do
       end
 
       it do
-        is_expected.to contain_ipmi__user('id_2').with(id:       2,
+        is_expected.to contain_ipmi__user('id_2').with(id: 2,
                                                        username: 'ADMIN',
                                                        password: 'secret',
-                                                       channel:  1)
+                                                       channel: 1)
       end
     end
 
@@ -189,14 +189,14 @@ describe 'ipmi', type: :class do
       end
 
       it do
-        is_expected.to contain_ipmi__user('id_3').with(id:       3,
+        is_expected.to contain_ipmi__user('id_3').with(id: 3,
                                                        username: 'other1',
                                                        password: 'secret1',
-                                                       channel:  1)
-        is_expected.to contain_ipmi__user('id_4').with(id:       4,
+                                                       channel: 1)
+        is_expected.to contain_ipmi__user('id_4').with(id: 4,
                                                        username: 'other2',
                                                        password: 'secret2',
-                                                       channel:  1)
+                                                       channel: 1)
       end
     end
 
@@ -234,27 +234,27 @@ describe 'ipmi', type: :class do
     describe 'allocating new id user chooses id within gap in existing users' do
       let :facts do
         super().merge(ipmi_users: [
-                                    {
-                                      'id'         => 1,
-                                      'username'   => '',
-                                      'fixed_name' => true,
-                                      'enabled'    => false,
-                                    },
-                                    {
-                                      'id'         => 2,
-                                      'username'   => 'ADMIN',
-                                      'fixed_name' => true,
-                                      'enabled'    => true,
-                                      'priv'       => 4,
-                                    },
-                                    {
-                                      'id'         => 4,
-                                      'username'   => 'other',
-                                      'fixed_name' => false,
-                                      'enabled'    => true,
-                                      'priv'       => 4,
-                                    },
-                                  ])
+          {
+            'id' => 1,
+            'username' => '',
+            'fixed_name' => true,
+            'enabled' => false,
+          },
+          {
+            'id' => 2,
+            'username' => 'ADMIN',
+            'fixed_name' => true,
+            'enabled' => true,
+            'priv' => 4,
+          },
+          {
+            'id' => 4,
+            'username' => 'other',
+            'fixed_name' => false,
+            'enabled' => true,
+            'priv' => 4,
+          },
+        ])
       end
       let(:params) do
         {
@@ -273,40 +273,40 @@ describe 'ipmi', type: :class do
   describe 'foreman_user => true' do
     let :facts do
       {
-        osfamily:        'Debian',
+        osfamily: 'Debian',
         ipmi_macaddress: 'ac:1f:6b:7f:d4:ce',
-        ipmi_max_users:  10,
-        ipmi_users:      [
-                           {
-                             'id'         => 1,
-                             'username'   => '',
-                             'fixed_name' => true,
-                             'enabled'    => false,
-                           },
-                           {
-                             'id'         => 2,
-                             'username'   => 'ADMIN',
-                             'fixed_name' => true,
-                             'enabled'    => true,
-                             'priv'       => 4,
-                           },
-                         ],
+        ipmi_max_users: 10,
+        ipmi_users: [
+          {
+            'id' => 1,
+            'username' => '',
+            'fixed_name' => true,
+            'enabled' => false,
+          },
+          {
+            'id' => 2,
+            'username' => 'ADMIN',
+            'fixed_name' => true,
+            'enabled' => true,
+            'priv' => 4,
+          },
+        ],
       }
     end
     let :node_params do
       {
         'foreman_interfaces' => [
           {
-            'mac'  => 'ac:1f:6b:7f:d5:16',
+            'mac' => 'ac:1f:6b:7f:d5:16',
             'type' => 'Interface',
           },
           {
-            'mac'  => 'ac:1f:6b:7f:d5:17',
+            'mac' => 'ac:1f:6b:7f:d5:17',
             'type' => 'Interface',
           },
           {
-            'mac'      => 'ac:1f:6b:7f:d4:ce',
-            'type'     => 'BMC',
+            'mac' => 'ac:1f:6b:7f:d4:ce',
+            'type' => 'BMC',
             'username' => 'ADMIN',
             'password' => 'SECRET',
           },
@@ -318,18 +318,18 @@ describe 'ipmi', type: :class do
       let(:params) { { 'foreman_user' => true } }
 
       it do
-        is_expected.to contain_ipmi__user('id_2').with(id:        2,
-                                                       username:  'ADMIN',
-                                                       password:  'SECRET',
+        is_expected.to contain_ipmi__user('id_2').with(id: 2,
+                                                       username: 'ADMIN',
+                                                       password: 'SECRET',
                                                        privilege: 4,
-                                                       channel:   1)
+                                                       channel: 1)
       end
     end
 
     describe 'specify privilege' do
       let(:params) do
         {
-          'foreman_user'           => true,
+          'foreman_user' => true,
           'foreman_user_privilege' => 3,
         }
       end
@@ -342,29 +342,29 @@ describe 'ipmi', type: :class do
     describe 'adding new Foreman user' do
       let :facts do
         super().merge(ipmi_users: [
-                                    {
-                                      'id'         => 1,
-                                      'username'   => '',
-                                      'fixed_name' => true,
-                                      'enabled'    => false,
-                                    },
-                                    {
-                                      'id'         => 2,
-                                      'username'   => 'root',
-                                      'fixed_name' => true,
-                                      'enabled'    => true,
-                                      'priv'       => 4,
-                                    },
-                                  ])
+          {
+            'id' => 1,
+            'username' => '',
+            'fixed_name' => true,
+            'enabled' => false,
+          },
+          {
+            'id' => 2,
+            'username' => 'root',
+            'fixed_name' => true,
+            'enabled' => true,
+            'priv' => 4,
+          },
+        ])
       end
       let(:params) { { 'foreman_user' => true } }
 
       it do
-        is_expected.to contain_ipmi__user('id_3').with(id:        3,
-                                                       username:  'ADMIN',
-                                                       password:  'SECRET',
+        is_expected.to contain_ipmi__user('id_3').with(id: 3,
+                                                       username: 'ADMIN',
+                                                       password: 'SECRET',
                                                        privilege: 4,
-                                                       channel:   1)
+                                                       channel: 1)
         is_expected.to have_ipmi__user_resource_count(1)
       end
     end
@@ -385,7 +385,7 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'  => 'ac:1f:6b:7f:d5:16',
+              'mac' => 'ac:1f:6b:7f:d5:16',
               'type' => 'Interface',
             },
           ],
@@ -403,7 +403,7 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'  => 'ac:1f:6b:7f:d5:16',
+              'mac' => 'ac:1f:6b:7f:d5:16',
               'type' => 'Interface',
             },
           ],
@@ -443,8 +443,8 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'      => 'ac:1f:6b:7f:d4:ce',
-              'type'     => 'BMC',
+              'mac' => 'ac:1f:6b:7f:d4:ce',
+              'type' => 'BMC',
               'username' => '',
               'password' => '',
             },
@@ -463,8 +463,8 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'      => 'ac:1f:6b:7f:d4:ce',
-              'type'     => 'BMC',
+              'mac' => 'ac:1f:6b:7f:d4:ce',
+              'type' => 'BMC',
               'username' => '',
               'password' => '',
             },
@@ -483,8 +483,8 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'      => 'ac:1f:6b:7f:d4:ce',
-              'type'     => 'BMC',
+              'mac' => 'ac:1f:6b:7f:d4:ce',
+              'type' => 'BMC',
               'username' => 'ADMIN',
               'password' => '',
             },
@@ -503,8 +503,8 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'      => 'ac:1f:6b:7f:d4:ce',
-              'type'     => 'BMC',
+              'mac' => 'ac:1f:6b:7f:d4:ce',
+              'type' => 'BMC',
               'username' => 'ADMIN',
               'password' => '',
             },
@@ -533,38 +533,38 @@ describe 'ipmi', type: :class do
   describe 'purge_users => true' do
     let :facts do
       {
-        osfamily:        'Debian',
+        osfamily: 'Debian',
         ipmi_macaddress: 'ac:1f:6b:7f:d4:ce',
-        ipmi_max_users:  10,
-        ipmi_users:      [
-                           {
-                             'id'         => 1,
-                             'username'   => '',
-                             'fixed_name' => true,
-                             'enabled'    => false,
-                           },
-                           {
-                             'id'         => 2,
-                             'username'   => 'ADMIN',
-                             'fixed_name' => true,
-                             'enabled'    => true,
-                             'priv'       => 4,
-                           },
-                           {
-                             'id'         => 3,
-                             'username'   => 'foreman',
-                             'fixed_name' => false,
-                             'enabled'    => true,
-                             'priv'       => 4,
-                           },
-                           {
-                             'id'         => 4,
-                             'username'   => 'old',
-                             'fixed_name' => false,
-                             'enabled'    => false,
-                             'priv'       => 4,
-                           },
-                         ],
+        ipmi_max_users: 10,
+        ipmi_users: [
+          {
+            'id' => 1,
+            'username' => '',
+            'fixed_name' => true,
+            'enabled' => false,
+          },
+          {
+            'id' => 2,
+            'username' => 'ADMIN',
+            'fixed_name' => true,
+            'enabled' => true,
+            'priv' => 4,
+          },
+          {
+            'id' => 3,
+            'username' => 'foreman',
+            'fixed_name' => false,
+            'enabled' => true,
+            'priv' => 4,
+          },
+          {
+            'id' => 4,
+            'username' => 'old',
+            'fixed_name' => false,
+            'enabled' => false,
+            'priv' => 4,
+          },
+        ],
       }
     end
 
@@ -584,9 +584,9 @@ describe 'ipmi', type: :class do
       let(:params) do
         {
           'purge_users' => true,
-          'users'       => [
+          'users' => [
             {
-              'id'       => 3,
+              'id' => 3,
               'username' => 'other',
               'password' => 'SSSSHH',
             },
@@ -606,8 +606,8 @@ describe 'ipmi', type: :class do
         {
           'foreman_interfaces' => [
             {
-              'mac'      => 'ac:1f:6b:7f:d4:ce',
-              'type'     => 'BMC',
+              'mac' => 'ac:1f:6b:7f:d4:ce',
+              'type' => 'BMC',
               'username' => 'ADMIN',
               'password' => 'SECRET',
             },
@@ -616,11 +616,11 @@ describe 'ipmi', type: :class do
       end
       let(:params) do
         {
-          'purge_users'  => true,
+          'purge_users' => true,
           'foreman_user' => true,
-          'users'        => [
+          'users' => [
             {
-              'id'       => 3,
+              'id' => 3,
               'username' => 'other',
               'password' => 'SSSSHH',
             },
@@ -652,7 +652,7 @@ describe 'ipmi', type: :class do
   describe 'snmp' do
     let :facts do
       {
-        'osfamily'     => 'Debian',
+        'osfamily' => 'Debian',
         'ipmi_channel' => 1,
       }
     end
@@ -668,7 +668,7 @@ describe 'ipmi', type: :class do
   describe 'network' do
     let :facts do
       {
-        'osfamily'     => 'Debian',
+        'osfamily' => 'Debian',
         'ipmi_channel' => 1,
       }
     end
